@@ -72,7 +72,7 @@ class VideoListActivity : AppCompatActivity() {
                         // Open reel player at selected position
                         val intent = Intent(this, MainActivity::class.java)
                         intent.putExtra("start_index", position)
-                        intent.putParcelableArrayListExtra(
+                        intent.putStringArrayListExtra(
                             "videos",
                             ArrayList(state.videos.map { it.uri })
                         )
