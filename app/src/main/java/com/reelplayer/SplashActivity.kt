@@ -17,11 +17,8 @@ class SplashActivity : AppCompatActivity() {
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        if (isGranted) {
-            goToMain()
-        } else {
-            handlePermissionDenied()
-        }
+        if (isGranted) goToList()
+        else handlePermissionDenied()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,46 +26,30 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.btnGrantPermission.setOnClickListener {
-            requestPermission()
-        }
+        binding.btnGrantPermission.setOnClickListener { requestPermission() }
 
-        // Auto-check on start
-        if (PermissionHelper.hasStoragePermission(this)) {
-            goToMain()
-        } else {
-            showPermissionUI()
-        }
+        if (PermissionHelper.hasStoragePermission(this)) goToList()
+        else showPermissionUI()
     }
 
     private fun requestPermission() {
         val permission = PermissionHelper.getRequiredPermission()
-
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
-            // User denied once — show rationale then ask again
-            Toast.makeText(
-                this,
-                "Storage permission is needed to find videos on your device",
-                Toast.LENGTH_LONG
-            ).show()
+            Toast.makeText(this, "Storage permission is needed to find videos", Toast.LENGTH_LONG).show()
         }
-
         permissionLauncher.launch(permission)
     }
 
     private fun handlePermissionDenied() {
-        binding.tvPermissionStatus.text =
-            "Permission denied. Tap the button to grant access to your videos."
-        Toast.makeText(this, "Permission required to scan videos", Toast.LENGTH_SHORT).show()
+        binding.tvPermissionStatus.text = "Permission denied. Tap the button to grant access."
     }
 
     private fun showPermissionUI() {
-        binding.tvPermissionStatus.text =
-            "ReelPlayer needs access to your videos to get started."
+        binding.tvPermissionStatus.text = "ReelPlayer needs access to your videos to get started."
     }
 
-    private fun goToMain() {
-        startActivity(Intent(this, MainActivity::class.java))
+    private fun goToList() {
+        startActivity(Intent(this, VideoListActivity::class.java))
         finish()
     }
 }

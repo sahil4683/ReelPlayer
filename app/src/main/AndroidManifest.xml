@@ -1,17 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Storage permissions -->
-    <!-- Android 13+ uses READ_MEDIA_VIDEO -->
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    <!-- Android 9 and below -->
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <!-- Android 10-12 -->
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="29" />
 
     <application
         android:allowBackup="true"
@@ -21,7 +14,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ReelPlayer">
 
-        <!-- Splash / Permission Screen -->
         <activity
             android:name=".SplashActivity"
             android:exported="true"
@@ -32,7 +24,11 @@
             </intent-filter>
         </activity>
 
-        <!-- Main Reel Player Screen -->
+        <activity
+            android:name=".VideoListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ReelPlayer.NoActionBar" />
+
         <activity
             android:name=".MainActivity"
             android:exported="false"

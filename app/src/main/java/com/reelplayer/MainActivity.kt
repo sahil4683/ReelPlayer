@@ -2,19 +2,20 @@ package com.reelplayer
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.reelplayer.adapter.ReelAdapter
 import com.reelplayer.databinding.ActivityMainBinding
-import com.reelplayer.viewmodel.VideoUiState
-import com.reelplayer.viewmodel.VideoViewModel
+import com.reelplayer.model.VideoItem
+import com.reelplayer.util.VideoScanner
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val viewModel: VideoViewModel by viewModels()
     private var reelAdapter: ReelAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,82 +23,61 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupViewPager()
-        observeViewModel()
+        val startIndex = intent.getIntExtra("start_index", 0)
+        val uriList = intent.getStringArrayListExtra("videos")
 
-        // Trigger video scan
-        viewModel.loadVideos()
-    }
-
-    private fun setupViewPager() {
-        binding.viewPager.orientation = ViewPager2.ORIENTATION_VERTICAL
-
-        // Smooth swipe feel — offscreen pages to keep loaded
-        binding.viewPager.offscreenPageLimit = 1
-
-        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                viewModel.setCurrentIndex(position)
-                // Play video at the newly selected page
-                reelAdapter?.playVideoAt(position, getRecyclerView())
+        if (!uriList.isNullOrEmpty()) {
+            // Started from VideoListActivity with pre-built list
+            val videos = uriList.mapIndexed { i, uri ->
+                VideoItem(i.toLong(), uri, uri.substringAfterLast("/"), 0L, 0L, 0L, "")
             }
-        })
-    }
-
-    private fun observeViewModel() {
-        viewModel.uiState.observe(this) { state ->
-            when (state) {
-                is VideoUiState.Loading -> {
-                    binding.progressBar.visibility = View.VISIBLE
-                    binding.tvEmpty.visibility = View.GONE
-                    binding.viewPager.visibility = View.GONE
+            setupPlayer(videos, startIndex)
+        } else {
+            // Fallback: scan videos directly
+            binding.progressBar.visibility = View.VISIBLE
+            CoroutineScope(Dispatchers.Main).launch {
+                val videos = withContext(Dispatchers.IO) {
+                    VideoScanner.scanVideos(applicationContext)
                 }
-                is VideoUiState.Success -> {
-                    binding.progressBar.visibility = View.GONE
-                    binding.tvEmpty.visibility = View.GONE
-                    binding.viewPager.visibility = View.VISIBLE
-
-                    reelAdapter = ReelAdapter(state.videos)
-                    binding.viewPager.adapter = reelAdapter
-
-                    // Auto-play first video
-                    reelAdapter?.playVideoAt(0, getRecyclerView())
-                }
-                is VideoUiState.Empty -> {
-                    binding.progressBar.visibility = View.GONE
+                binding.progressBar.visibility = View.GONE
+                if (videos.isEmpty()) {
                     binding.tvEmpty.visibility = View.VISIBLE
-                    binding.viewPager.visibility = View.GONE
-                    binding.tvEmpty.text = "No videos found on your device."
-                }
-                is VideoUiState.Error -> {
-                    binding.progressBar.visibility = View.GONE
-                    Toast.makeText(this, state.message, Toast.LENGTH_LONG).show()
+                } else {
+                    setupPlayer(videos, 0)
                 }
             }
         }
+
+        // Back button
+        binding.btnBack.setOnClickListener { finish() }
     }
 
-    /**
-     * ViewPager2 wraps a RecyclerView internally. We need it to call
-     * findViewHolderForAdapterPosition on the adapter.
-     */
+    private fun setupPlayer(videos: List<VideoItem>, startIndex: Int) {
+        binding.viewPager.visibility = View.VISIBLE
+        binding.viewPager.orientation = ViewPager2.ORIENTATION_VERTICAL
+        binding.viewPager.offscreenPageLimit = 1
+
+        reelAdapter = ReelAdapter(videos)
+        binding.viewPager.adapter = reelAdapter
+        binding.viewPager.setCurrentItem(startIndex, false)
+
+        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                reelAdapter?.playVideoAt(position, getRecyclerView())
+            }
+        })
+
+        // Play the starting video after layout
+        binding.viewPager.post {
+            reelAdapter?.playVideoAt(startIndex, getRecyclerView())
+        }
+    }
+
     private fun getRecyclerView(): androidx.recyclerview.widget.RecyclerView {
         return binding.viewPager.getChildAt(0) as androidx.recyclerview.widget.RecyclerView
     }
 
-    override fun onPause() {
-        super.onPause()
-        reelAdapter?.pauseAll()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        reelAdapter?.resumeCurrent()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        reelAdapter?.releaseAll(getRecyclerView())
-    }
+    override fun onPause() { super.onPause(); reelAdapter?.pauseAll() }
+    override fun onResume() { super.onResume(); reelAdapter?.resumeCurrent() }
+    override fun onDestroy() { super.onDestroy(); reelAdapter?.releaseAll(getRecyclerView()) }
 }

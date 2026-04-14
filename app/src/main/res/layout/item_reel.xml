@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- ExoPlayer surface (fullscreen video) -->
     <androidx.media3.ui.PlayerView
         android:id="@+id/playerView"
         android:layout_width="0dp"
@@ -18,19 +17,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Thumbnail shown before video loads -->
     <ImageView
         android:id="@+id/thumbnail"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="centerCrop"
-        android:contentDescription="Video thumbnail"
+        android:contentDescription="Thumbnail"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Buffering spinner (per-item) -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
@@ -42,7 +39,24 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Dark gradient overlay at bottom for text readability -->
+    <!-- 2x Speed indicator -->
+    <TextView
+        android:id="@+id/tvSpeedIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="56dp"
+        android:background="@drawable/bg_duration_badge"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="6dp"
+        android:text="▶▶ 2x"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <View
         android:id="@+id/gradientOverlay"
         android:layout_width="0dp"
@@ -52,7 +66,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- Video title -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="0dp"
@@ -68,7 +81,6 @@
         app:layout_constraintBottom_toTopOf="@id/tvFolder"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- Folder name -->
     <TextView
         android:id="@+id/tvFolder"
         android:layout_width="0dp"
@@ -76,13 +88,11 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="72dp"
         android:layout_marginBottom="28dp"
-        android:drawablePadding="4dp"
         android:textColor="#CCCCCC"
         android:textSize="13sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- Duration badge (top right) -->
     <TextView
         android:id="@+id/tvDuration"
         android:layout_width="wrap_content"
@@ -97,7 +107,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Play / Pause button (center tap) -->
     <ImageButton
         android:id="@+id/btnPlayPause"
         android:layout_width="64dp"
