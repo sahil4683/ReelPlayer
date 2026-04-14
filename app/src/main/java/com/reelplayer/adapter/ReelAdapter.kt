@@ -12,6 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.reelplayer.databinding.ItemReelBinding
 import com.reelplayer.model.VideoItem
+import android.os.Handler
+import android.os.Looper
+import android.widget.SeekBar
 
 class ReelAdapter(
     private val videos: List<VideoItem>
@@ -67,6 +70,33 @@ override fun onDetachedFromRecyclerView(rv: RecyclerView) {
         private var player: ExoPlayer? = null
         private var videoItem: VideoItem? = null
         private var isSpeedBoosted = false
+
+        private val handler = Handler(Looper.getMainLooper())
+private val updateSeekBar = object : Runnable {
+    override fun run() {
+        player?.let { exo ->
+            if (exo.isPlaying) {
+                val position = exo.currentPosition
+                val duration = exo.duration
+                if (duration > 0) {
+                    binding.seekBar.max = duration.toInt()
+                    binding.seekBar.progress = position.toInt()
+                    val cur = formatTime(position)
+                    val total = formatTime(duration)
+                    binding.tvTime.text = "$cur / $total"
+                }
+            }
+        }
+        handler.postDelayed(this, 500)
+    }
+}
+
+private fun formatTime(ms: Long): String {
+    val totalSec = ms / 1000
+    val min = totalSec / 60
+    val sec = totalSec % 60
+    return String.format("%d:%02d", min, sec)
+}
 
         fun bind(item: VideoItem) {
             videoItem = item
@@ -153,17 +183,34 @@ override fun onDetachedFromRecyclerView(rv: RecyclerView) {
             }
 
             player?.playWhenReady = true
+            // Start seekbar updates
+handler.post(updateSeekBar)
+
+// Seekbar drag to seek
+binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+    override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
+        if (fromUser) player?.seekTo(progress.toLong())
+    }
+    override fun onStartTrackingTouch(sb: SeekBar) {
+        handler.removeCallbacks(updateSeekBar)
+    }
+    override fun onStopTrackingTouch(sb: SeekBar) {
+        handler.post(updateSeekBar)
+    }
+})
             binding.btnPlayPause.setImageResource(android.R.drawable.ic_media_pause)
         }
 
         fun pause() {
             player?.playWhenReady = false
             binding.btnPlayPause.setImageResource(android.R.drawable.ic_media_play)
+            handler.removeCallbacks(updateSeekBar)
         }
 
         fun release() {
             player?.release()
             player = null
+            handler.removeCallbacks(updateSeekBar)
         }
     }
 
