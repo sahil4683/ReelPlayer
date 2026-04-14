@@ -22,6 +22,36 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Create launcher icons
+        run: |
+          mkdir -p app/src/main/res/mipmap-mdpi
+          mkdir -p app/src/main/res/mipmap-hdpi
+          mkdir -p app/src/main/res/mipmap-xhdpi
+          mkdir -p app/src/main/res/mipmap-xxhdpi
+          mkdir -p app/src/main/res/mipmap-xxxhdpi
+
+          for size in 48 72 96 144 192; do
+            case $size in
+              48)  dir="mipmap-mdpi" ;;
+              72)  dir="mipmap-hdpi" ;;
+              96)  dir="mipmap-xhdpi" ;;
+              144) dir="mipmap-xxhdpi" ;;
+              192) dir="mipmap-xxxhdpi" ;;
+            esac
+
+            convert -size ${size}x${size} \
+              -define gradient:angle=135 \
+              gradient:'#E91E63-#C2185B' \
+              -gravity center \
+              -fill white \
+              -pointsize $((size/3)) \
+              -annotate 0 "R" \
+              app/src/main/res/${dir}/ic_launcher.png
+
+            cp app/src/main/res/${dir}/ic_launcher.png \
+               app/src/main/res/${dir}/ic_launcher_round.png
+          done
+
       - name: Grant execute permission to gradlew
         run: chmod +x gradlew
 
