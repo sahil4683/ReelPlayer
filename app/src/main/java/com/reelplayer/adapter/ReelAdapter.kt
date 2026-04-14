@@ -17,6 +17,19 @@ class ReelAdapter(
     private val videos: List<VideoItem>
 ) : RecyclerView.Adapter<ReelAdapter.ReelViewHolder>() {
 
+    
+    private var recyclerView: RecyclerView? = null
+
+override fun onAttachedToRecyclerView(rv: RecyclerView) {
+    super.onAttachedToRecyclerView(rv)
+    recyclerView = rv
+}
+
+override fun onDetachedFromRecyclerView(rv: RecyclerView) {
+    super.onDetachedFromRecyclerView(rv)
+    recyclerView = null
+}
+
     private var currentPlayingHolder: ReelViewHolder? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReelViewHolder {
@@ -110,25 +123,32 @@ class ReelAdapter(
             if (player == null) {
                 player = ExoPlayer.Builder(ctx).build().also { exo ->
                     binding.playerView.player = exo
-                    exo.repeatMode = Player.REPEAT_MODE_ONE
+                    exo.repeatMode = Player.REPEAT_MODE_OFF
                     exo.volume = 1f
 
                     exo.setMediaItem(MediaItem.fromUri(Uri.parse(item.uri)))
                     exo.prepare()
 
                     exo.addListener(object : Player.Listener {
-                        override fun onPlaybackStateChanged(state: Int) {
-                            when (state) {
-                                Player.STATE_READY -> {
-                                    binding.thumbnail.visibility = View.GONE
-                                    binding.progressBar.visibility = View.GONE
-                                }
-                                Player.STATE_BUFFERING -> {
-                                    binding.progressBar.visibility = View.VISIBLE
-                                }
-                            }
-                        }
-                    })
+    override fun onPlaybackStateChanged(state: Int) {
+        when (state) {
+            Player.STATE_READY -> {
+                binding.thumbnail.visibility = View.GONE
+                binding.progressBar.visibility = View.GONE
+            }
+            Player.STATE_BUFFERING -> {
+                binding.progressBar.visibility = View.VISIBLE
+            }
+            Player.STATE_ENDED -> {
+                // Auto-play next video
+                val next = adapterPosition + 1
+                if (next < itemCount) {
+                    recyclerView?.smoothScrollToPosition(next)
+                }
+            }
+        }
+    }
+})
                 }
             }
 
