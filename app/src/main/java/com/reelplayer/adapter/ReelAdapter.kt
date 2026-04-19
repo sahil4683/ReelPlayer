@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.reelplayer.databinding.ItemReelBinding
@@ -70,6 +71,13 @@ override fun onDetachedFromRecyclerView(rv: RecyclerView) {
         private var player: ExoPlayer? = null
         private var videoItem: VideoItem? = null
         private var isSpeedBoosted = false
+        private var currentResizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+
+        private val resizeModeNames = mapOf(
+            AspectRatioFrameLayout.RESIZE_MODE_FIT to "Fit",
+            AspectRatioFrameLayout.RESIZE_MODE_FILL to "Fill",
+            AspectRatioFrameLayout.RESIZE_MODE_ZOOM to "Zoom"
+        )
 
         private val handler = Handler(Looper.getMainLooper())
 private val updateSeekBar = object : Runnable {
@@ -119,6 +127,12 @@ private fun formatTime(ms: Long): String {
                 player?.let { if (it.isPlaying) pause() else play() }
             }
 
+            binding.btnAspectRatio.setOnClickListener {
+                toggleResizeMode()
+            }
+
+            updateAspectRatioLabel()
+
             // Long press = 2x speed, release = normal speed
             binding.root.setOnLongClickListener {
                 setSpeed(2.0f)
@@ -146,6 +160,20 @@ private fun formatTime(ms: Long): String {
             }
         }
 
+        private fun toggleResizeMode() {
+            currentResizeMode = when (currentResizeMode) {
+                AspectRatioFrameLayout.RESIZE_MODE_FIT -> AspectRatioFrameLayout.RESIZE_MODE_FILL
+                AspectRatioFrameLayout.RESIZE_MODE_FILL -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+                else -> AspectRatioFrameLayout.RESIZE_MODE_FIT
+            }
+            binding.playerView.resizeMode = currentResizeMode
+            updateAspectRatioLabel()
+        }
+
+        private fun updateAspectRatioLabel() {
+            binding.tvAspectRatio.text = resizeModeNames[currentResizeMode] ?: "Zoom"
+        }
+
         fun play() {
             val item = videoItem ?: return
             val ctx = binding.root.context
@@ -153,6 +181,7 @@ private fun formatTime(ms: Long): String {
             if (player == null) {
                 player = ExoPlayer.Builder(ctx).build().also { exo ->
                     binding.playerView.player = exo
+                    binding.playerView.resizeMode = currentResizeMode
                     exo.repeatMode = Player.REPEAT_MODE_OFF
                     exo.volume = 1f
 
