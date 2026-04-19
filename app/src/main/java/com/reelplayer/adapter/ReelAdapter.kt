@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -70,19 +69,15 @@ override fun onDetachedFromRecyclerView(rv: RecyclerView) {
         RecyclerView.ViewHolder(binding.root) {
 
         private var player: ExoPlayer? = null
-        private var trackSelector: DefaultTrackSelector? = null
         private var videoItem: VideoItem? = null
         private var isSpeedBoosted = false
         private var currentResizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-        private var currentQualityIndex = 0
 
         private val resizeModeNames = mapOf(
             AspectRatioFrameLayout.RESIZE_MODE_FIT to "Fit",
             AspectRatioFrameLayout.RESIZE_MODE_FILL to "Fill",
             AspectRatioFrameLayout.RESIZE_MODE_ZOOM to "Zoom"
         )
-
-        private val qualityNames = listOf("Auto", "High", "Low")
 
         private val handler = Handler(Looper.getMainLooper())
 private val updateSeekBar = object : Runnable {
@@ -136,12 +131,7 @@ private fun formatTime(ms: Long): String {
                 toggleResizeMode()
             }
 
-            binding.btnQuality.setOnClickListener {
-                toggleQualityMode()
-            }
-
             updateAspectRatioLabel()
-            updateQualityLabel()
 
             // Long press = 2x speed, release = normal speed
             binding.root.setOnLongClickListener {
@@ -184,36 +174,12 @@ private fun formatTime(ms: Long): String {
             binding.tvAspectRatio.text = resizeModeNames[currentResizeMode] ?: "Zoom"
         }
 
-        private fun toggleQualityMode() {
-            currentQualityIndex = (currentQualityIndex + 1) % qualityNames.size
-            updateQualityLabel()
-            applyQualityMode()
-        }
-
-        private fun updateQualityLabel() {
-            binding.tvQuality.text = qualityNames[currentQualityIndex]
-        }
-
-        private fun applyQualityMode() {
-            trackSelector?.let { selector ->
-                val builder = selector.buildUponParameters()
-                when (qualityNames[currentQualityIndex]) {
-                    "Low" -> builder.setMaxVideoBitrate(600_000)
-                    "High" -> builder.setMaxVideoBitrate(Int.MAX_VALUE)
-                    else -> builder.setMaxVideoBitrate(Int.MAX_VALUE)
-                }
-                selector.parameters = builder.build()
-            }
-        }
-
         fun play() {
             val item = videoItem ?: return
             val ctx = binding.root.context
 
             if (player == null) {
-                trackSelector = DefaultTrackSelector(ctx)
                 player = ExoPlayer.Builder(ctx)
-                    .setTrackSelector(trackSelector!!)
                     .build().also { exo ->
                         binding.playerView.player = exo
                         binding.playerView.resizeMode = currentResizeMode
@@ -245,9 +211,6 @@ private fun formatTime(ms: Long): String {
 })
                 }
             }
-
-            updateQualityLabel()
-            applyQualityMode()
 
             player?.playWhenReady = true
             // Start seekbar updates
