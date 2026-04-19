@@ -113,6 +113,36 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/tvQuality"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_duration_badge"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="4dp"
+        android:text="Auto"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp"
+        app:layout_constraintStart_toEndOf="@id/tvAspectRatio"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/btnQuality"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/bg_circle_semi"
+        android:contentDescription="Toggle quality"
+        android:padding="12dp"
+        android:src="@android:drawable/ic_menu_sort_by_size"
+        android:tint="#FFFFFF"
+        app:layout_constraintEnd_toStartOf="@id/btnAspectRatio"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <ImageButton
         android:id="@+id/btnAspectRatio"
         android:layout_width="48dp"
