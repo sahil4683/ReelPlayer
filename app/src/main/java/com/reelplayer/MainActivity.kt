@@ -87,18 +87,21 @@ class MainActivity : AppCompatActivity() {
         return binding.viewPager.getChildAt(0) as androidx.recyclerview.widget.RecyclerView
     }
 
-    override fun onPause() { super.onPause(); reelAdapter?.pauseAll() }
-    override fun onResume() { super.onResume(); reelAdapter?.resumeCurrent() }
-    override fun onDestroy() {
-        contentResolver.unregisterContentObserver(rotationObserver)
-        super.onDestroy()
-        reelAdapter?.releaseAll(getRecyclerView())
+    override fun onPause() {
+        super.onPause()
+        reelAdapter?.pauseAll()
     }
 
     override fun onResume() {
         super.onResume()
         updateOrientation()
         reelAdapter?.resumeCurrent()
+    }
+
+    override fun onDestroy() {
+        contentResolver.unregisterContentObserver(rotationObserver)
+        super.onDestroy()
+        reelAdapter?.releaseAll(getRecyclerView())
     }
 
     private fun updateOrientation() {
