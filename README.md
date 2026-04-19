@@ -2,7 +2,7 @@
 
 A native Android app that scans your local storage and plays videos in a smooth vertical scroll experience — just like Instagram Reels or YouTube Shorts.
 
-📱 Download Latest Artifact APK : https://github.com/sahil4683/ReelPlayer/actions/runs/24381892620/artifacts/6420627065
+📱 Download Latest Artifact APK : https://github.com/sahil4683/ReelPlayer/actions/runs/24636102418/artifacts/6520239631
 ---
 
 ## ✨ Features
